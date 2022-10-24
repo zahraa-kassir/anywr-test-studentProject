@@ -16,11 +16,14 @@ func main() {
 	e.Use(middleware.Recover())
 
 	// Connect to the "bank" database
-	db.Connect("postgres://postgres:admin@localhost:5432/anywr-student-project")
+	db.Connect("postgres://postgres:admin@localhost:5432/anywrstudentproject")
 
 	//Routes
 	classController := controller.ClassController{
 		ClassRepository: repository.ClassRepository{
+			DB: db.Instance,
+		},
+		StudentRepository: repository.StudentRepository{
 			DB: db.Instance,
 		},
 	}
@@ -43,8 +46,9 @@ func main() {
 	//class option
 	classgrp := maingrp.Group("/UniClass")
 	classgrp.GET("", classController.GetAll)
-	classgrp.GET("/:id", classController.GetById)
-	classgrp.GET("/:code", classController.GetByCode)
+	classgrp.GET("/id/:id", classController.GetById)
+	classgrp.GET("/code/:code", classController.GetByCode)
+	classgrp.GET("/email/:email", classController.GetByStudentMail)
 
 	//student option
 	stdgrp := maingrp.Group("/st")
