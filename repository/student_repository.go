@@ -15,8 +15,10 @@ func (s StudentRepository) GetAll() []entity.Student {
 	return students
 }
 
-func (s StudentRepository) GetByEmail(email string) entity.Student {
-	var student = entity.Student{Email: email}
-	_ = s.DB.First(&student)
-	return student
+func (s StudentRepository) GetByEmail(email string) *entity.Student {
+	var student entity.Student
+	if dbc := s.DB.Where("email = ?", email).First(&student); dbc.Error != nil {
+		return nil
+	}
+	return &student
 }
