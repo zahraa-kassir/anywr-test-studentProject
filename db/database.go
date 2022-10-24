@@ -14,5 +14,5 @@ func Connect(connectioString string) {
 	if dbError != nil {
 		log.Fatal("error configuring the database: ", dbError)
 	}
-	log.Println("Hey! You successfully connected to your CockroachDB cluster.")
+	log.Println("Hey! You successfully connected to your db.")
 }
