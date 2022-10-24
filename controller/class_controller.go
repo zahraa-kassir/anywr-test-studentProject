@@ -1,14 +1,20 @@
 package controller
 
 import (
+	"errors"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"
 	"test-pr/anywr-test-studentProject/repository"
 )
 
+var (
+	ErrUserNotFound = errors.New("user not found, no data")
+)
+
 type ClassController struct {
-	ClassRepository repository.ClassRepository
+	ClassRepository   repository.ClassRepository
+	StudentRepository repository.StudentRepository
 }
 
 func (r ClassController) GetAll(c echo.Context) error {
@@ -21,6 +27,16 @@ func (r ClassController) GetById(c echo.Context) error {
 }
 
 func (r ClassController) GetByCode(c echo.Context) error {
-	code, _ := strconv.Atoi(c.Param("code"))
-	return c.JSON(http.StatusOK, r.ClassRepository.GetById(code))
+	return c.JSON(http.StatusOK, r.ClassRepository.GetByCode(c.Param("code")))
+}
+func (r ClassController) GetByStudentMail(c echo.Context) error {
+
+	ownerOfEmail := r.StudentRepository.GetByEmail(c.Param("email"))
+	if ownerOfEmail == nil {
+
+		return c.JSON(http.StatusBadRequest, ErrUserNotFound)
+
+	}
+	return c.JSON(http.StatusOK, r.ClassRepository.GetDataOfThisStudent(ownerOfEmail.Id))
+
 }
