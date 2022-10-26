@@ -26,10 +26,19 @@ func main() {
 		StudentRepository: repository.StudentRepository{
 			DB: db.Instance,
 		},
+		TeacherRepository: repository.TeacherRepository{
+			DB: db.Instance,
+		},
 	}
 
 	StudentController := controller.StudentController{
 		StudentRepository: repository.StudentRepository{
+			DB: db.Instance,
+		},
+		ClassRepository: repository.ClassRepository{
+			DB: db.Instance,
+		},
+		TeacherRepository: repository.TeacherRepository{
 			DB: db.Instance,
 		},
 	}
@@ -41,24 +50,26 @@ func main() {
 	}
 
 	//main group
-	maingrp := e.Group("/anywrUni")
+	mainGrp := e.Group("/anywrUni")
 
 	//class option
-	classgrp := maingrp.Group("/UniClass")
-	classgrp.GET("", classController.GetAll)
-	classgrp.GET("/id/:id", classController.GetById)
-	classgrp.GET("/code/:code", classController.GetByCode)
-	classgrp.GET("/email/:email", classController.GetByStudentMail)
+	classGrp := mainGrp.Group("/UniClass")
+	classGrp.GET("", classController.GetAll)
+	classGrp.GET("/id/:id", classController.GetById)
+	classGrp.GET("/code/:code", classController.GetByCode)
+	classGrp.GET("/dataCode", classController.GetStByClCode)
 
 	//student option
-	stdgrp := maingrp.Group("/st")
-	stdgrp.GET("", StudentController.GetAll)
-	stdgrp.GET("/:email", StudentController.GetByEmail)
+	stdGrp := mainGrp.Group("/st")
+	stdGrp.GET("", StudentController.GetAll)
+	stdGrp.GET("/:email", StudentController.GetByEmail)
+	stdGrp.GET("/code/:code", StudentController.GetByCode)
+	stdGrp.GET("/filter", StudentController.GetByThAndClass)
 
 	//teacher option
-	teachgrp := maingrp.Group("/tea")
-	teachgrp.GET("", TeacherController.GetAll)
-	teachgrp.GET("/:email", TeacherController.GetByEmail)
+	teachGrp := mainGrp.Group("/tea")
+	teachGrp.GET("", TeacherController.GetAll)
+	teachGrp.GET("/:email", TeacherController.GetByEmail)
 
 	// Start server
 	e.Logger.Fatal(e.Start(":8080"))
