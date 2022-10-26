@@ -5,16 +5,20 @@ import (
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"
+	"test-pr/anywr-test-studentProject/dto"
+	"test-pr/anywr-test-studentProject/payload"
 	"test-pr/anywr-test-studentProject/repository"
 )
 
 var (
 	ErrUserNotFound = errors.New("user not found, no data")
+	ErrDataOption   = errors.New("data option not found")
 )
 
 type ClassController struct {
 	ClassRepository   repository.ClassRepository
 	StudentRepository repository.StudentRepository
+	TeacherRepository repository.TeacherRepository
 }
 
 func (r ClassController) GetAll(c echo.Context) error {
@@ -29,14 +33,49 @@ func (r ClassController) GetById(c echo.Context) error {
 func (r ClassController) GetByCode(c echo.Context) error {
 	return c.JSON(http.StatusOK, r.ClassRepository.GetByCode(c.Param("code")))
 }
-func (r ClassController) GetByStudentMail(c echo.Context) error {
 
-	ownerOfEmail := r.StudentRepository.GetByEmail(c.Param("email"))
-	if ownerOfEmail == nil {
+func (r ClassController) GetStByClCode(c echo.Context) error {
+	//empty StudentForClass data
+	stClassData := &payload.StudentForClass{}
 
-		return c.JSON(http.StatusBadRequest, ErrUserNotFound)
-
+	//bind data from client request ro StudentForClass
+	if err := c.Bind(stClassData); err != nil {
+		return err
 	}
-	return c.JSON(http.StatusOK, r.ClassRepository.GetDataOfThisStudent(ownerOfEmail.Id))
 
+	class := r.ClassRepository.GetByCode(stClassData.MCode)
+	cl := dto.Class{
+		Code:   class.Code,
+		Name:   class.Name,
+		Credit: class.CreditNb,
+	}
+
+	students := r.StudentRepository.GetByCode(class.Id)
+	var std []dto.SimpleStudentData
+	for i, v := range students {
+		student := dto.SimpleStudentData{
+			Id:    i,
+			Name:  v.Name,
+			Email: v.Email,
+		}
+		std = append(std, student)
+	}
+	teachers := r.TeacherRepository.GetByCode(class.Id)
+	var teach []dto.SimpleTeacherData
+	for i, v := range teachers {
+		th := dto.SimpleTeacherData{
+			Id:    i,
+			Name:  v.Name,
+			Email: v.Email,
+		}
+		teach = append(teach, th)
+	}
+
+	uniClassData := &dto.UniClassData{
+		Class:    cl,
+		Students: std,
+		Teachers: teach,
+	}
+
+	return c.JSON(http.StatusOK, uniClassData)
 }
