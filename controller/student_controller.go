@@ -34,7 +34,7 @@ func (s StudentController) GetAll(c echo.Context) error {
 				Id:    i,
 				Name:  v.Name,
 				Email: v.Email,
-				Class: dto.Class{
+				Class: dto.SimpleClassData{
 					Code:   v.Classes.Code,
 					Name:   v.Classes.Name,
 					Credit: v.Classes.CreditNb,
@@ -57,7 +57,7 @@ func (s StudentController) GetByEmail(c echo.Context) error {
 		Id:    data.Id,
 		Name:  data.Name,
 		Email: data.Email,
-		Class: dto.Class{
+		Class: dto.SimpleClassData{
 			Code:   data.Classes.Code,
 			Name:   data.Classes.Name,
 			Credit: data.Classes.CreditNb,
@@ -127,7 +127,7 @@ func (s StudentController) GetByThAndClass(c echo.Context) error {
 		},
 	}
 
-	var fiClass dto.Class
+	var fiClass dto.SimpleClassData
 
 	//get student by class code
 	var stud []entity.Student

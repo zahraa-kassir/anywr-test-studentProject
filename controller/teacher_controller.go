@@ -33,9 +33,9 @@ func (t TeacherContoller) GetAll(c echo.Context) error {
 			},
 		}
 
-		var cls []dto.Class
+		var cls []dto.SimpleClassData
 		for _, b := range v.Classes {
-			cl := dto.Class{
+			cl := dto.SimpleClassData{
 				Code:   b.Code,
 				Name:   b.Name,
 				Credit: b.CreditNb,
@@ -65,9 +65,9 @@ func (t TeacherContoller) GetByEmail(c echo.Context) error {
 		Name:  data.Name,
 		Email: data.Email,
 	}
-	var cl []dto.Class
+	var cl []dto.SimpleClassData
 	for _, v := range data.Classes {
-		cls := dto.Class{
+		cls := dto.SimpleClassData{
 			Code:   v.Code,
 			Name:   v.Name,
 			Credit: v.CreditNb,

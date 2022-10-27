@@ -9,6 +9,7 @@ type ClassRepository struct {
 	DB *gorm.DB
 }
 
+// GetAll return all data of classes
 func (c ClassRepository) GetAll() []entity.Classes {
 	var class []entity.Classes
 	_ = c.DB.Find(&class)
@@ -16,8 +17,8 @@ func (c ClassRepository) GetAll() []entity.Classes {
 }
 
 func (c ClassRepository) GetById(id int) entity.Classes {
-	var class = entity.Classes{Id: id}
-	_ = c.DB.Take(&class)
+	var class entity.Classes
+	_ = c.DB.Scopes(byClassesId(id)).Take(&class)
 	return class
 }
 

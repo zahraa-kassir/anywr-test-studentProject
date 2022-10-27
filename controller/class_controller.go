@@ -6,13 +6,14 @@ import (
 	"net/http"
 	"strconv"
 	"test-pr/anywr-test-studentProject/dto"
+	"test-pr/anywr-test-studentProject/entity"
 	"test-pr/anywr-test-studentProject/payload"
 	"test-pr/anywr-test-studentProject/repository"
 )
 
 var (
 	ErrUserNotFound = errors.New("user not found, no data")
-	ErrDataOption   = errors.New("data option not found")
+	ErrData         = errors.New("data not found")
 )
 
 type ClassController struct {
@@ -21,17 +22,41 @@ type ClassController struct {
 	TeacherRepository repository.TeacherRepository
 }
 
+// GetAll return all classes
 func (r ClassController) GetAll(c echo.Context) error {
-	return c.JSON(http.StatusOK, r.ClassRepository.GetAll())
+
+	//get data
+	classData := r.ClassRepository.GetAll()
+
+	//re-construct this with dto.class
+	var all []dto.Class
+	for _, v := range classData {
+		obj := reconstruct(&v)
+		all = append(all, obj)
+	}
+
+	return c.JSON(http.StatusOK, all)
 }
 
+// GetById get class based on class.id
 func (r ClassController) GetById(c echo.Context) error {
+	//handle param and convert
 	id, _ := strconv.Atoi(c.Param("id"))
-	return c.JSON(http.StatusOK, r.ClassRepository.GetById(id))
+	//get data
+	data := r.ClassRepository.GetById(id)
+	//re-construct based on dto.class
+	class := reconstruct(&data)
+	return c.JSON(http.StatusOK, class)
 }
 
 func (r ClassController) GetByCode(c echo.Context) error {
-	return c.JSON(http.StatusOK, r.ClassRepository.GetByCode(c.Param("code")))
+	//handle class code
+	code := c.Param("code")
+	//get data
+	data := r.ClassRepository.GetByCode(code)
+	//re-construct based on dto.class
+	class := reconstruct(data)
+	return c.JSON(http.StatusOK, class)
 }
 
 func (r ClassController) GetStByClCode(c echo.Context) error {
@@ -42,40 +67,6 @@ func (r ClassController) GetStByClCode(c echo.Context) error {
 	if err := c.Bind(stClassData); err != nil {
 		return err
 	}
-
-	/*class := r.ClassRepository.GetByCode(stClassData.MCode)
-	cl := dto.Class{
-		Code:   class.Code,
-		Name:   class.Name,
-		Credit: class.CreditNb,
-	}
-
-	students := r.StudentRepository.GetByCode(class.Id)
-	var std []dto.SimpleStudentData
-	for i, v := range students {
-		student := dto.SimpleStudentData{
-			Id:    i,
-			Name:  v.Name,
-			Email: v.Email,
-		}
-		std = append(std, student)
-	}
-	teachers := r.TeacherRepository.GetByCode(class.Id)
-	var teach []dto.SimpleTeacherData
-	for i, v := range teachers {
-		th := dto.SimpleTeacherData{
-			Id:    i,
-			Name:  v.Name,
-			Email: v.Email,
-		}
-		teach = append(teach, th)
-	}
-
-	uniClassData := &dto.UniClassData{
-		Class:    cl,
-		Students: std,
-		Teachers: teach,
-	}*/
 
 	class := r.ClassRepository.GetStByClCode(stClassData.MCode)
 	var std []dto.SimpleStudentData
@@ -100,7 +91,7 @@ func (r ClassController) GetStByClCode(c echo.Context) error {
 	}
 
 	uniClassData := &dto.UniClassData{
-		Class: dto.Class{
+		Class: dto.SimpleClassData{
 			Code:   class.Code,
 			Name:   class.Name,
 			Credit: class.CreditNb,
@@ -110,4 +101,14 @@ func (r ClassController) GetStByClCode(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, uniClassData)
+}
+
+func reconstruct(data *entity.Classes) dto.Class {
+	cl := dto.Class{
+		Code:        data.Code,
+		Name:        data.Name,
+		CreditNb:    data.CreditNb,
+		Description: data.Description,
+	}
+	return cl
 }
