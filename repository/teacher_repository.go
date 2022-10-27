@@ -35,10 +35,3 @@ func (t TeacherRepository) GetByCode(code int) []*entity.Teacher {
 	return teachers
 
 }
-
-func (t TeacherRepository) VerifieIfExist(code int) bool {
-	if teachers := t.GetByCode(code); len(teachers) != 0 {
-		return true
-	}
-	return false
-}
