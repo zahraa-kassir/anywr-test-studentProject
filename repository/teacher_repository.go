@@ -18,7 +18,7 @@ func (t TeacherRepository) GetAll() []entity.Teacher {
 
 func (t TeacherRepository) GetByEmail(email string) *entity.Teacher {
 	var teacher entity.Teacher
-	if dbc := t.DB.Preload("Classes").First(&teacher, "email = ? ", email); dbc.Error != nil {
+	if dbc := t.DB.Preload("Classes").Scopes(byTeachEmail(email)).First(&teacher); dbc.Error != nil {
 		return nil
 	}
 	return &teacher
@@ -34,4 +34,10 @@ func (t TeacherRepository) GetByCode(code int) []*entity.Teacher {
 
 	return teachers
 
+}
+
+func byTeachEmail(email string) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		return db.Where("teachers.email = ? ", email)
+	}
 }
