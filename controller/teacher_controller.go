@@ -8,7 +8,7 @@ import (
 	"test-pr/anywr-test-studentProject/repository"
 )
 
-type TeacherContoller struct {
+type TeacherController struct {
 	TeacherRepository repository.TeacherRepository
 }
 
@@ -16,7 +16,7 @@ var (
 	ErrNotFounds = errors.New("data not found")
 )
 
-func (t TeacherContoller) GetAll(c echo.Context) error {
+func (t TeacherController) GetAll(c echo.Context) error {
 	//create a handle for teachers data
 	tData := t.TeacherRepository.GetAll()
 	if tData == nil {
@@ -54,7 +54,7 @@ func (t TeacherContoller) GetAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, teachers)
 }
 
-func (t TeacherContoller) GetByEmail(c echo.Context) error {
+func (t TeacherController) GetByEmail(c echo.Context) error {
 	email := c.Param("email")
 	data := t.TeacherRepository.GetByEmail(email)
 	if data == nil {
