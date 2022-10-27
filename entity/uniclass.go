@@ -8,8 +8,8 @@ type Classes struct {
 	Name        string
 	CreditNb    int
 	Description string
-	//[] student one to many
-	//[]teachers many 2 many
+	Student     []Student `gorm:"ForeignKey:class;"`                                                         // one to many
+	Teacher     []Teacher `gorm:"many2many:teacher_classes;joinForeignKey:class_id;joinReferences:teach_id"` // many 2 many
 }
 
 func (u Classes) TableName() string {

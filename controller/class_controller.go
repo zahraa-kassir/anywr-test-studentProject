@@ -43,7 +43,7 @@ func (r ClassController) GetStByClCode(c echo.Context) error {
 		return err
 	}
 
-	class := r.ClassRepository.GetByCode(stClassData.MCode)
+	/*class := r.ClassRepository.GetByCode(stClassData.MCode)
 	cl := dto.Class{
 		Code:   class.Code,
 		Name:   class.Name,
@@ -73,6 +73,38 @@ func (r ClassController) GetStByClCode(c echo.Context) error {
 
 	uniClassData := &dto.UniClassData{
 		Class:    cl,
+		Students: std,
+		Teachers: teach,
+	}*/
+
+	class := r.ClassRepository.GetStByClCode(stClassData.MCode)
+	var std []dto.SimpleStudentData
+	var teach []dto.SimpleTeacherData
+	if class.Id != 0 {
+		for i, v := range class.Student {
+			student := dto.SimpleStudentData{
+				Id:    i,
+				Name:  v.Name,
+				Email: v.Email,
+			}
+			std = append(std, student)
+		}
+		for i, v := range class.Teacher {
+			th := dto.SimpleTeacherData{
+				Id:    i,
+				Name:  v.Name,
+				Email: v.Email,
+			}
+			teach = append(teach, th)
+		}
+	}
+
+	uniClassData := &dto.UniClassData{
+		Class: dto.Class{
+			Code:   class.Code,
+			Name:   class.Name,
+			Credit: class.CreditNb,
+		},
 		Students: std,
 		Teachers: teach,
 	}

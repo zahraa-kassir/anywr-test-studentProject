@@ -26,3 +26,18 @@ func (c ClassRepository) GetByCode(code string) *entity.Classes {
 	_ = c.DB.Take(&class, "code = ?", code)
 	return &class
 }
+
+func (c ClassRepository) GetStByClCode(code string) entity.Classes {
+	var class entity.Classes
+
+	if obj := c.GetByCode(code); obj.Id != 0 {
+		_ = c.DB.
+			Where("classes.id = ?", obj.Id).
+			Preload("Student", "class =?", obj.Id).
+			Preload("Teacher").
+			Joins("inner join teacher_classes as tc on tc.class_id = classes.id and tc.class_id = ? ", obj.Id).
+			Take(&class)
+
+	}
+	return class
+}
