@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"test-pr/anywr-test-studentProject/container/db"
 	"test-pr/anywr-test-studentProject/controller"
-	"test-pr/anywr-test-studentProject/db"
 	"test-pr/anywr-test-studentProject/repository"
 )
 

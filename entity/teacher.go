@@ -1,6 +1,9 @@
 package entity
 
-import "fmt"
+import (
+	"fmt"
+	"gorm.io/gorm"
+)
 
 type Teacher struct {
 	Id       int `gorm:"primaryKey"`
@@ -12,6 +15,12 @@ type Teacher struct {
 
 func (t Teacher) TableName() string {
 	return "teachers"
+}
+
+func ByTeachEmail(email string) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		return db.Where("teachers.email = ? ", email)
+	}
 }
 
 func (t Teacher) ToString() string {

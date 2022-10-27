@@ -18,13 +18,13 @@ func (c ClassRepository) GetAll() []entity.Classes {
 
 func (c ClassRepository) GetById(id int) entity.Classes {
 	var class entity.Classes
-	_ = c.DB.Scopes(byClassesId(id)).Take(&class)
+	_ = c.DB.Scopes(entity.ByClassesId(id)).Take(&class)
 	return class
 }
 
 func (c ClassRepository) GetByCode(code string) *entity.Classes {
 	var class entity.Classes
-	_ = c.DB.Scopes(byClassCode(code)).Take(&class)
+	_ = c.DB.Scopes(entity.ByClassCode(code)).Take(&class)
 	return &class
 }
 
@@ -33,7 +33,7 @@ func (c ClassRepository) GetStByClCode(code string) entity.Classes {
 
 	if obj := c.GetByCode(code); obj.Id != 0 {
 		_ = c.DB.
-			Scopes(byClassesId(obj.Id)).
+			Scopes(entity.ByClassesId(obj.Id)).
 			Preload("Student", "class =?", obj.Id).
 			Preload("Teacher").
 			Joins("inner join teacher_classes as tc on tc.class_id = classes.id and tc.class_id = ? ", obj.Id).
@@ -41,15 +41,4 @@ func (c ClassRepository) GetStByClCode(code string) entity.Classes {
 
 	}
 	return class
-}
-
-func byClassCode(code string) func(db *gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
-		return db.Where("classes.code = ? ", code)
-	}
-}
-func byClassesId(id int) func(db *gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
-		return db.Where("classes.id = ? ", id)
-	}
 }

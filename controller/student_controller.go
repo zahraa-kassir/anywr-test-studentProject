@@ -30,7 +30,7 @@ func (s StudentController) GetAll(c echo.Context) error {
 	//create response data form
 	var students []dto.Student
 	for _, v := range data {
-		std := reconstructStudent(v, reconstructSimpleClass(v.Classes))
+		std := dto.ReconstructStudent(v)
 		students = append(students, std)
 	}
 	return c.JSON(http.StatusOK, students)
@@ -46,7 +46,7 @@ func (s StudentController) GetByEmail(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, ErrNotFound)
 	}
 	//create response data based on dto.student
-	std := reconstructStudent(*data, reconstructSimpleClass(data.Classes))
+	std := dto.ReconstructStudent(*data)
 	return c.JSON(http.StatusOK, std)
 }
 
@@ -125,7 +125,7 @@ func (s StudentController) GetByThAndClass(c echo.Context) error {
 		}
 		stud = q
 
-		FinalData.Class = reconstructSimpleClass(*class)
+		FinalData.Class = dto.ReconstructSimpleClass(*class)
 	} else {
 		stud = nil
 	}
@@ -147,23 +147,4 @@ func (s StudentController) GetByThAndClass(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, FinalData)
-}
-
-func reconstructSimpleClass(data entity.Classes) dto.SimpleClassData {
-	cls := dto.SimpleClassData{
-		Code:   data.Code,
-		Name:   data.Name,
-		Credit: data.CreditNb,
-	}
-	return cls
-}
-
-func reconstructStudent(data entity.Student, classData dto.SimpleClassData) dto.Student {
-	std := dto.Student{
-		Id:    data.Id,
-		Name:  data.Name,
-		Email: data.Email,
-		Class: classData,
-	}
-	return std
 }

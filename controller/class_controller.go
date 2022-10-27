@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strconv"
 	"test-pr/anywr-test-studentProject/dto"
-	"test-pr/anywr-test-studentProject/entity"
 	"test-pr/anywr-test-studentProject/payload"
 	"test-pr/anywr-test-studentProject/repository"
 )
@@ -29,7 +28,7 @@ func (r ClassController) GetAll(c echo.Context) error {
 	//re-construct this with dto.class
 	var all []dto.Class
 	for _, v := range classData {
-		obj := reconstructClass(&v)
+		obj := dto.ReconstructClass(&v)
 		all = append(all, obj)
 	}
 	return c.JSON(http.StatusOK, all)
@@ -42,7 +41,7 @@ func (r ClassController) GetById(c echo.Context) error {
 	//get data
 	data := r.ClassRepository.GetById(id)
 	//re-construct based on dto.class
-	class := reconstructClass(&data)
+	class := dto.ReconstructClass(&data)
 	return c.JSON(http.StatusOK, class)
 }
 
@@ -52,7 +51,7 @@ func (r ClassController) GetByCode(c echo.Context) error {
 	//get data
 	data := r.ClassRepository.GetByCode(code)
 	//re-construct based on dto.class
-	class := reconstructClass(data)
+	class := dto.ReconstructClass(data)
 	return c.JSON(http.StatusOK, class)
 }
 
@@ -89,21 +88,10 @@ func (r ClassController) GetStByClCode(c echo.Context) error {
 	}
 
 	uniClassData := &dto.UniClassData{
-		Class:    reconstructSimpleClass(class),
+		Class:    dto.ReconstructSimpleClass(class),
 		Students: std,
 		Teachers: teach,
 	}
 
 	return c.JSON(http.StatusOK, uniClassData)
-}
-
-// reconstructClass with dto.class
-func reconstructClass(data *entity.Classes) dto.Class {
-	cl := dto.Class{
-		Code:        data.Code,
-		Name:        data.Name,
-		CreditNb:    data.CreditNb,
-		Description: data.Description,
-	}
-	return cl
 }
