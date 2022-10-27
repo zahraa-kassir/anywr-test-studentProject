@@ -20,6 +20,7 @@ var (
 	ErrNotFound = errors.New("data not found")
 )
 
+// GetAll  all student data
 func (s StudentController) GetAll(c echo.Context) error {
 	//create a handle for student data
 	data := s.StudentRepository.GetAll()
@@ -27,55 +28,42 @@ func (s StudentController) GetAll(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, ErrNotFound)
 	}
 	//create response data form
-	var students []dto.GetAllStudent
-	for i, v := range data {
-		std := dto.GetAllStudent{
-			Student: dto.Student{
-				Id:    i,
-				Name:  v.Name,
-				Email: v.Email,
-				Class: dto.SimpleClassData{
-					Code:   v.Classes.Code,
-					Name:   v.Classes.Name,
-					Credit: v.Classes.CreditNb,
-				},
-			},
-		}
+	var students []dto.Student
+	for _, v := range data {
+		std := reconstructStudent(v, reconstructSimpleClass(v.Classes))
 		students = append(students, std)
 	}
-
 	return c.JSON(http.StatusOK, students)
 }
 
+// GetByEmail data of student based on email@
 func (s StudentController) GetByEmail(c echo.Context) error {
+	//handel param email
 	email := c.Param("email")
+	//get data
 	data := s.StudentRepository.GetByEmail(email)
 	if data == nil {
 		return c.JSON(http.StatusBadRequest, ErrNotFound)
 	}
-	std := dto.Student{
-		Id:    data.Id,
-		Name:  data.Name,
-		Email: data.Email,
-		Class: dto.SimpleClassData{
-			Code:   data.Classes.Code,
-			Name:   data.Classes.Name,
-			Credit: data.Classes.CreditNb,
-		},
-	}
+	//create response data based on dto.student
+	std := reconstructStudent(*data, reconstructSimpleClass(data.Classes))
 	return c.JSON(http.StatusOK, std)
 }
 
 func (s StudentController) GetByCode(c echo.Context) error {
+	//handle code
 	code := c.Param("code")
+	//verifie if data of classes.code exist
 	data := s.ClassRepository.GetByCode(code)
 	if data == nil {
 		return c.JSON(http.StatusBadRequest, ErrNotFound)
 	}
+	//get data of student based on class.id
 	stud := s.StudentRepository.GetByCode(data.Id)
 	if stud == nil {
 		return c.JSON(http.StatusBadRequest, ErrNotFound)
 	}
+	//re-construct data based on dto.studentByClass
 	sdata := dto.StudentByClass{
 		Code: data.Code,
 		Name: data.Name,
@@ -127,8 +115,6 @@ func (s StudentController) GetByThAndClass(c echo.Context) error {
 		},
 	}
 
-	var fiClass dto.SimpleClassData
-
 	//get student by class code
 	var stud []entity.Student
 	if exist {
@@ -138,12 +124,9 @@ func (s StudentController) GetByThAndClass(c echo.Context) error {
 			return c.JSON(http.StatusBadRequest, ErrNotFound)
 		}
 		stud = q
-		fiClass.Code = class.Code
-		fiClass.Name = class.Name
-		fiClass.Credit = class.CreditNb
-		FinalData.Class = &fiClass
+
+		FinalData.Class = reconstructSimpleClass(*class)
 	} else {
-		FinalData.Class = nil
 		stud = nil
 	}
 
@@ -164,4 +147,23 @@ func (s StudentController) GetByThAndClass(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, FinalData)
+}
+
+func reconstructSimpleClass(data entity.Classes) dto.SimpleClassData {
+	cls := dto.SimpleClassData{
+		Code:   data.Code,
+		Name:   data.Name,
+		Credit: data.CreditNb,
+	}
+	return cls
+}
+
+func reconstructStudent(data entity.Student, classData dto.SimpleClassData) dto.Student {
+	std := dto.Student{
+		Id:    data.Id,
+		Name:  data.Name,
+		Email: data.Email,
+		Class: classData,
+	}
+	return std
 }

@@ -24,17 +24,14 @@ type ClassController struct {
 
 // GetAll return all classes
 func (r ClassController) GetAll(c echo.Context) error {
-
 	//get data
 	classData := r.ClassRepository.GetAll()
-
 	//re-construct this with dto.class
 	var all []dto.Class
 	for _, v := range classData {
-		obj := reconstruct(&v)
+		obj := reconstructClass(&v)
 		all = append(all, obj)
 	}
-
 	return c.JSON(http.StatusOK, all)
 }
 
@@ -45,7 +42,7 @@ func (r ClassController) GetById(c echo.Context) error {
 	//get data
 	data := r.ClassRepository.GetById(id)
 	//re-construct based on dto.class
-	class := reconstruct(&data)
+	class := reconstructClass(&data)
 	return c.JSON(http.StatusOK, class)
 }
 
@@ -55,7 +52,7 @@ func (r ClassController) GetByCode(c echo.Context) error {
 	//get data
 	data := r.ClassRepository.GetByCode(code)
 	//re-construct based on dto.class
-	class := reconstruct(data)
+	class := reconstructClass(data)
 	return c.JSON(http.StatusOK, class)
 }
 
@@ -63,12 +60,13 @@ func (r ClassController) GetStByClCode(c echo.Context) error {
 	//empty StudentForClass data
 	stClassData := &payload.StudentForClass{}
 
-	//bind data from client request ro StudentForClass
+	//bind data from client request  StudentForClass
 	if err := c.Bind(stClassData); err != nil {
 		return err
 	}
-
+	//get data
 	class := r.ClassRepository.GetStByClCode(stClassData.MCode)
+	//re-construct code with dto.uniClassData
 	var std []dto.SimpleStudentData
 	var teach []dto.SimpleTeacherData
 	if class.Id != 0 {
@@ -91,11 +89,7 @@ func (r ClassController) GetStByClCode(c echo.Context) error {
 	}
 
 	uniClassData := &dto.UniClassData{
-		Class: dto.SimpleClassData{
-			Code:   class.Code,
-			Name:   class.Name,
-			Credit: class.CreditNb,
-		},
+		Class:    reconstructSimpleClass(class),
 		Students: std,
 		Teachers: teach,
 	}
@@ -103,7 +97,8 @@ func (r ClassController) GetStByClCode(c echo.Context) error {
 	return c.JSON(http.StatusOK, uniClassData)
 }
 
-func reconstruct(data *entity.Classes) dto.Class {
+// reconstructClass with dto.class
+func reconstructClass(data *entity.Classes) dto.Class {
 	cl := dto.Class{
 		Code:        data.Code,
 		Name:        data.Name,
