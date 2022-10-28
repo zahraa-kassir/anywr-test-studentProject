@@ -3,6 +3,7 @@ package entity
 import (
 	"fmt"
 	"gorm.io/gorm"
+	"strconv"
 )
 
 type Student struct {
@@ -33,6 +34,23 @@ func ByStudentEmail(email string) func(db *gorm.DB) *gorm.DB {
 func ByStudentClassId(id int) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		return db.Where("students.class = ? ", id)
+	}
+
+}
+
+// ByPageNum offset and limit
+func ByPageNum(page, size string) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		//handle and convert page numb to int
+		pageNb, _ := strconv.Atoi(page)
+		if pageNb == 0 {
+			pageNb = 1
+		}
+		//handle and convert pageSize to int
+		pageSize, _ := strconv.Atoi(size)
+		//set offset based on pageSize jump x nb
+		offset := (pageNb - 1) * pageSize
+		return db.Offset(offset).Limit(pageSize)
 	}
 
 }

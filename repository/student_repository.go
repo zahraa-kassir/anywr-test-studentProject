@@ -37,13 +37,13 @@ func (s StudentRepository) GetByCode(id int) []entity.Student {
 
 }
 
-func (s StudentRepository) GetByFilter(code int) []entity.Student {
+func (s StudentRepository) GetByFilter(code int, page string, pageSize string) []entity.Student {
 
 	var students []entity.Student
 
 	if dbc := s.DB.
 		//Where("students.class = ?", code).
-		Scopes(entity.ByStudentClassId(code)).
+		Scopes(entity.ByStudentClassId(code), entity.ByPageNum(page, pageSize)).
 		Preload("Classes", "id=?", code).
 		Find(&students); dbc.Error != nil {
 		return nil

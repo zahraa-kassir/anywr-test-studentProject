@@ -118,7 +118,7 @@ func (s StudentController) GetByThAndClass(c echo.Context) error {
 	//get student by class code
 	var stud []entity.Student
 	if exist {
-		q := s.StudentRepository.GetByFilter(class.Id)
+		q := s.StudentRepository.GetByFilter(class.Id, FilterData.Page, FilterData.PageSize)
 
 		if q == nil {
 			return c.JSON(http.StatusBadRequest, ErrNotFound)
