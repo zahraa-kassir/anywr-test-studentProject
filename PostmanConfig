@@ -1,0 +1,7 @@
+1.copy this link and import it on postman to get the init of request
+2. create a localhost  'http://localhost:8080' in environments new variable
+
+
+host :  '   http://localhost:8080   '
+
+link :  '   https://www.getpostman.com/collections/e730e86730b9c5928664 '
