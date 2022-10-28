@@ -16,8 +16,8 @@ type StudentController struct {
 	TeacherRepository repository.TeacherRepository
 }
 
-func StudCont(studRep repository.StudentRepository, classRep repository.ClassRepository, teachRep repository.TeacherRepository) StudentController {
-	return StudentController{
+func StudCont(studRep repository.StudentRepository, classRep repository.ClassRepository, teachRep repository.TeacherRepository) *StudentController {
+	return &StudentController{
 		StudentRepository: studRep,
 		ClassRepository:   classRep,
 		TeacherRepository: teachRep,
@@ -100,6 +100,7 @@ func (s StudentController) GetByThAndClass(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, ErrNotFound)
 	}
 
+	//get teacher data
 	teach := s.TeacherRepository.GetByEmail(FilterData.TeachEmail)
 	if teach == nil {
 		return c.JSON(http.StatusBadRequest, ErrNotFound)

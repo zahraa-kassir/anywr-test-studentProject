@@ -12,8 +12,8 @@ type TeacherController struct {
 	TeacherRepository repository.TeacherRepository
 }
 
-func TeachCont(rep repository.TeacherRepository) TeacherController {
-	return TeacherController{
+func TeachCont(rep repository.TeacherRepository) *TeacherController {
+	return &TeacherController{
 		TeacherRepository: rep,
 	}
 }

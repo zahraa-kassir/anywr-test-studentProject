@@ -15,8 +15,8 @@ type ClassController struct {
 	TeacherRepository repository.TeacherRepository
 }
 
-func ClassCont(classRep repository.ClassRepository, studRep repository.StudentRepository, teachRep repository.TeacherRepository) ClassController {
-	return ClassController{
+func ClassCont(classRep repository.ClassRepository, studRep repository.StudentRepository, teachRep repository.TeacherRepository) *ClassController {
+	return &ClassController{
 		ClassRepository:   classRep,
 		StudentRepository: studRep,
 		TeacherRepository: teachRep,
