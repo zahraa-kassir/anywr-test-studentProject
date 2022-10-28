@@ -9,6 +9,12 @@ type StudentRepository struct {
 	DB *gorm.DB
 }
 
+func StudRepo(db *gorm.DB) StudentRepository {
+	return StudentRepository{
+		DB: db,
+	}
+}
+
 func (s StudentRepository) GetAll() []entity.Student {
 	var students []entity.Student
 	_ = s.DB.Preload("Classes").Find(&students)

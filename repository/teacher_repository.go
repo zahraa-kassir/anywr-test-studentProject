@@ -9,6 +9,12 @@ type TeacherRepository struct {
 	DB *gorm.DB
 }
 
+func TeachRepo(db *gorm.DB) TeacherRepository {
+	return TeacherRepository{
+		DB: db,
+	}
+}
+
 func (t TeacherRepository) GetAll() []entity.Teacher {
 	var teachers []entity.Teacher
 	_ = t.DB.Preload("Classes").

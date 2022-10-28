@@ -16,6 +16,14 @@ type StudentController struct {
 	TeacherRepository repository.TeacherRepository
 }
 
+func StudCont(studRep repository.StudentRepository, classRep repository.ClassRepository, teachRep repository.TeacherRepository) StudentController {
+	return StudentController{
+		StudentRepository: studRep,
+		ClassRepository:   classRep,
+		TeacherRepository: teachRep,
+	}
+}
+
 var (
 	ErrNotFound = errors.New("data not found")
 )
@@ -68,13 +76,9 @@ func (s StudentController) GetByCode(c echo.Context) error {
 		Code: data.Code,
 		Name: data.Name,
 	}
-	var stdArray []dto.SimpleStudentData
+	var stdArray []dto.SimpleData
 	for i, v := range stud {
-		obj := dto.SimpleStudentData{
-			Id:    i,
-			Name:  v.Name,
-			Email: v.Email,
-		}
+		obj := dto.ReconstructSimpleData(i, v.Name, v.Email)
 		stdArray = append(stdArray, obj)
 	}
 	sdata.Students = stdArray
@@ -108,11 +112,7 @@ func (s StudentController) GetByThAndClass(c echo.Context) error {
 		}
 	}
 	FinalData := dto.FilterData{
-		Teacher: dto.SimpleTeacherData{
-			Id:    teach.Id,
-			Name:  teach.Name,
-			Email: teach.Email,
-		},
+		Teacher: dto.ReconstructSimpleData(teach.Id, teach.Name, teach.Email),
 	}
 
 	//get student by class code
@@ -131,13 +131,9 @@ func (s StudentController) GetByThAndClass(c echo.Context) error {
 	}
 
 	if stud != nil {
-		var students []dto.SimpleStudentData
-		for _, v := range stud {
-			n := dto.SimpleStudentData{
-				Id:    v.Id,
-				Name:  v.Name,
-				Email: v.Email,
-			}
+		var students []dto.SimpleData
+		for i, v := range stud {
+			n := dto.ReconstructSimpleData(i, v.Name, v.Email)
 			students = append(students, n)
 		}
 

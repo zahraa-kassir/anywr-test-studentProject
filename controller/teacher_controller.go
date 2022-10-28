@@ -12,6 +12,12 @@ type TeacherController struct {
 	TeacherRepository repository.TeacherRepository
 }
 
+func TeachCont(rep repository.TeacherRepository) TeacherController {
+	return TeacherController{
+		TeacherRepository: rep,
+	}
+}
+
 var (
 	ErrNotFounds = errors.New("data not found")
 )
@@ -26,11 +32,7 @@ func (t TeacherController) GetAll(c echo.Context) error {
 	var teachers []dto.GetAllTeachers
 	for i, v := range tData {
 		tea := dto.GetAllTeachers{
-			Teacher: dto.SimpleTeacherData{
-				Id:    i,
-				Name:  v.Name,
-				Email: v.Email,
-			},
+			Teacher: dto.ReconstructSimpleData(i, v.Name, v.Email),
 		}
 
 		var cls []dto.SimpleClassData

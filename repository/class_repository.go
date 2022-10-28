@@ -9,6 +9,12 @@ type ClassRepository struct {
 	DB *gorm.DB
 }
 
+func ClassRepo(db *gorm.DB) ClassRepository {
+	return ClassRepository{
+		DB: db,
+	}
+}
+
 // GetAll return all data of classes
 func (c ClassRepository) GetAll() []entity.Classes {
 	var class []entity.Classes

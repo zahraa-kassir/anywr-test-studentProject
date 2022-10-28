@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"errors"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"
@@ -10,15 +9,18 @@ import (
 	"test-pr/anywr-test-studentProject/repository"
 )
 
-var (
-	ErrUserNotFound = errors.New("user not found, no data")
-	ErrData         = errors.New("data not found")
-)
-
 type ClassController struct {
 	ClassRepository   repository.ClassRepository
 	StudentRepository repository.StudentRepository
 	TeacherRepository repository.TeacherRepository
+}
+
+func ClassCont(classRep repository.ClassRepository, studRep repository.StudentRepository, teachRep repository.TeacherRepository) ClassController {
+	return ClassController{
+		ClassRepository:   classRep,
+		StudentRepository: studRep,
+		TeacherRepository: teachRep,
+	}
 }
 
 // GetAll return all classes
@@ -45,6 +47,7 @@ func (r ClassController) GetById(c echo.Context) error {
 	return c.JSON(http.StatusOK, class)
 }
 
+// GetByCode get class based on class.code
 func (r ClassController) GetByCode(c echo.Context) error {
 	//handle class code
 	code := c.Param("code")
@@ -55,6 +58,7 @@ func (r ClassController) GetByCode(c echo.Context) error {
 	return c.JSON(http.StatusOK, class)
 }
 
+// GetStByClCode get class students based on class.code
 func (r ClassController) GetStByClCode(c echo.Context) error {
 	//empty StudentForClass data
 	stClassData := &payload.StudentForClass{}
@@ -65,33 +69,9 @@ func (r ClassController) GetStByClCode(c echo.Context) error {
 	}
 	//get data
 	class := r.ClassRepository.GetStByClCode(stClassData.MCode)
-	//re-construct code with dto.uniClassData
-	var std []dto.SimpleStudentData
-	var teach []dto.SimpleTeacherData
-	if class.Id != 0 {
-		for i, v := range class.Student {
-			student := dto.SimpleStudentData{
-				Id:    i,
-				Name:  v.Name,
-				Email: v.Email,
-			}
-			std = append(std, student)
-		}
-		for i, v := range class.Teacher {
-			th := dto.SimpleTeacherData{
-				Id:    i,
-				Name:  v.Name,
-				Email: v.Email,
-			}
-			teach = append(teach, th)
-		}
-	}
 
-	uniClassData := &dto.UniClassData{
-		Class:    dto.ReconstructSimpleClass(class),
-		Students: std,
-		Teachers: teach,
-	}
+	//re-construct code with dto.uniClassData
+	uniClassData := dto.ReconstructUniClassData(class)
 
 	return c.JSON(http.StatusOK, uniClassData)
 }
