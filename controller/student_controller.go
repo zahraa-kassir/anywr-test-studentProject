@@ -72,7 +72,7 @@ func (s StudentController) GetByCode(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, ErrNotFound)
 	}
 	//re-construct data based on dto.studentByClass
-	sdata := dto.StudentByClass{
+	sData := dto.StudentByClass{
 		Code: data.Code,
 		Name: data.Name,
 	}
@@ -81,67 +81,32 @@ func (s StudentController) GetByCode(c echo.Context) error {
 		obj := dto.ReconstructSimpleData(i, v.Name, v.Email)
 		stdArray = append(stdArray, obj)
 	}
-	sdata.Students = stdArray
+	sData.Students = stdArray
 
-	return c.JSON(http.StatusOK, sdata)
+	return c.JSON(http.StatusOK, sData)
 }
 
 func (s StudentController) GetByThAndClass(c echo.Context) error {
 	//empty Filter data
 	FilterData := &payload.FilterByTeacherAndClass{}
-
 	//bind data from client request ro StudentForClass
 	if err := c.Bind(FilterData); err != nil {
 		return err
 	}
-	//get class data
+	//get class data & get teacher data
 	class := s.ClassRepository.GetByCode(FilterData.ClassCode)
-	if class == nil {
-		return c.JSON(http.StatusBadRequest, ErrNotFound)
-	}
-
-	//get teacher data
 	teach := s.TeacherRepository.GetByEmail(FilterData.TeachEmail)
-	if teach == nil {
+	if class == nil || teach == nil {
 		return c.JSON(http.StatusBadRequest, ErrNotFound)
 	}
-
-	exist := false
-	for _, v := range teach.Classes {
-		if class.Id == v.Id {
-			exist = true
-		}
-	}
-	FinalData := dto.FilterData{
-		Teacher: dto.ReconstructSimpleData(teach.Id, teach.Name, teach.Email),
-	}
-
 	//get student by class code
 	var stud []entity.Student
-	if exist {
-		q := s.StudentRepository.GetByFilter(class.Id, FilterData.Page, FilterData.PageSize)
-
-		if q == nil {
-			return c.JSON(http.StatusBadRequest, ErrNotFound)
-		}
-		stud = q
-
-		FinalData.Class = dto.ReconstructSimpleClass(*class)
-	} else {
-		stud = nil
+	stud = s.StudentRepository.GetByFilter(class.Id, FilterData.Page, FilterData.PageSize, FilterData.TeachEmail)
+	if stud == nil {
+		return c.JSON(http.StatusBadRequest, ErrNotFound)
 	}
-
-	if stud != nil {
-		var students []dto.SimpleData
-		for i, v := range stud {
-			n := dto.ReconstructSimpleData(i, v.Name, v.Email)
-			students = append(students, n)
-		}
-
-		FinalData.Student = students
-	} else {
-		FinalData.Student = nil
-	}
+	//re-construct final data
+	FinalData := dto.ReconstructFilterData(*teach, *class, stud)
 
 	return c.JSON(http.StatusOK, FinalData)
 }
