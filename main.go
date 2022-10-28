@@ -4,8 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"test-pr/anywr-test-studentProject/container/db"
-	"test-pr/anywr-test-studentProject/controller"
-	"test-pr/anywr-test-studentProject/repository"
+	"test-pr/anywr-test-studentProject/container/injectors"
 )
 
 func main() {
@@ -19,35 +18,9 @@ func main() {
 	db.Connect("postgres://postgres:admin@localhost:5432/anywrstudentproject")
 
 	//Routes
-	classController := controller.ClassController{
-		ClassRepository: repository.ClassRepository{
-			DB: db.Instance,
-		},
-		StudentRepository: repository.StudentRepository{
-			DB: db.Instance,
-		},
-		TeacherRepository: repository.TeacherRepository{
-			DB: db.Instance,
-		},
-	}
-
-	StudentController := controller.StudentController{
-		StudentRepository: repository.StudentRepository{
-			DB: db.Instance,
-		},
-		ClassRepository: repository.ClassRepository{
-			DB: db.Instance,
-		},
-		TeacherRepository: repository.TeacherRepository{
-			DB: db.Instance,
-		},
-	}
-
-	TeacherController := controller.TeacherContoller{
-		TeacherRepository: repository.TeacherRepository{
-			DB: db.Instance,
-		},
-	}
+	TeacherController := injectors.InitialiseTeachCont(db.Instance)
+	StudentController := injectors.InitialiseStudCont(db.Instance)
+	classController := injectors.InitialiseClassCont(db.Instance)
 
 	//main group
 	mainGrp := e.Group("/anywrUni")
