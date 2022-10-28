@@ -1,7 +1,7 @@
 package dto
 
 type FilterData struct {
-	Teacher SimpleTeacherData   `json:"teacher"`
-	Class   SimpleClassData     `json:"class"`
-	Student []SimpleStudentData `json:"student"`
+	Teacher SimpleData      `json:"teacher"`
+	Class   SimpleClassData `json:"class"`
+	Student []SimpleData    `json:"student"`
 }
