@@ -3,6 +3,7 @@ package entity
 import (
 	"fmt"
 	"gorm.io/gorm"
+	"strings"
 )
 
 type Classes struct {
@@ -34,6 +35,19 @@ func ByClassCode(code string) func(db *gorm.DB) *gorm.DB {
 func ByClassesId(id int) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		return db.Where("classes.id = ? ", id)
+	}
+}
+
+// ByClassSort sorting acs des
+func ByClassSort(sort string) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		rType := strings.ToLower(sort)
+
+		if rType == "desc" {
+			return db.Order("classes.code DESC")
+		}
+
+		return db.Order("classes.code ASC")
 	}
 }
 

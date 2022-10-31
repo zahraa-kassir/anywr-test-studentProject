@@ -41,3 +41,14 @@ func (t TeacherRepository) GetByCode(code int) []*entity.Teacher {
 	return teachers
 
 }
+func (t TeacherRepository) GetBy2(code int, email string) *entity.Teacher {
+	var teacher entity.Teacher
+	if dbc := t.DB.Preload("Classes").
+		Scopes(entity.ByTeachEmail(email)).
+		Joins("inner join teacher_classes as tc on tc.teach_id = teachers.id and tc.class_id = ? ", code).
+		First(&teacher); dbc.Error != nil {
+		return nil
+	}
+	return &teacher
+
+}

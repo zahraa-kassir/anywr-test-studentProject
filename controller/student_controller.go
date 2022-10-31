@@ -67,7 +67,7 @@ func (s StudentController) GetByCode(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, ErrNotFound)
 	}
 	//get data of student based on class.id
-	stud := s.StudentRepository.GetByCode(data.Id)
+	stud, _ := s.StudentRepository.GetByCode(data.Id, "", "")
 	if stud == nil {
 		return c.JSON(http.StatusBadRequest, ErrNotFound)
 	}
@@ -88,25 +88,86 @@ func (s StudentController) GetByCode(c echo.Context) error {
 
 func (s StudentController) GetByThAndClass(c echo.Context) error {
 	//empty Filter data
-	FilterData := &payload.FilterByTeacherAndClass{}
+	filterData := &payload.FilterByTeacherAndClass{}
 	//bind data from client request ro StudentForClass
-	if err := c.Bind(FilterData); err != nil {
+	if err := c.Bind(filterData); err != nil {
 		return err
 	}
-	//get class data & get teacher data
-	class := s.ClassRepository.GetByCode(FilterData.ClassCode)
-	teach := s.TeacherRepository.GetByEmail(FilterData.TeachEmail)
-	if class == nil || teach == nil {
-		return c.JSON(http.StatusBadRequest, ErrNotFound)
-	}
-	//get student by class code
-	var stud []entity.Student
-	stud = s.StudentRepository.GetByFilter(class.Id, FilterData.Page, FilterData.PageSize, FilterData.TeachEmail)
-	if stud == nil {
-		return c.JSON(http.StatusBadRequest, ErrNotFound)
-	}
-	//re-construct final data
-	FinalData := dto.ReconstructFilterData(*teach, *class, stud)
+	switch {
+	case filterData.RankBy != "":
+		//by rank (min , max) 2 case for this:
+		//{} one by class code
+		//{} student for every class
+		if filterData.ClassCode == "" {
+			//get student by class code
+			var stud []entity.Student
+			var numb int64
+			stud, numb = s.StudentRepository.GetByRank(0, *filterData)
+			if stud == nil {
+				return c.JSON(http.StatusBadRequest, ErrNotFound)
+			}
+			//re-construct final data
+			FinalData := dto.ReconstructFilterData(stud, *filterData, numb, "rank")
 
-	return c.JSON(http.StatusOK, FinalData)
+			return c.JSON(http.StatusOK, FinalData)
+
+		} else {
+			//get class data
+			class := s.ClassRepository.GetByCode(filterData.ClassCode)
+			if class == nil {
+				return c.JSON(http.StatusBadRequest, "no data")
+			}
+			//get student by class code
+			var stud []entity.Student
+			var numb int64
+			stud, numb = s.StudentRepository.GetByRank(class.Id, *filterData)
+			if stud == nil {
+				return c.JSON(http.StatusBadRequest, ErrNotFound)
+			}
+			//re-construct final data
+			FinalData := dto.ReconstructFilterData(stud, *filterData, numb, "rank")
+
+			return c.JSON(http.StatusOK, FinalData)
+
+		}
+
+	case filterData.TeachEmail != "" && filterData.ClassCode != "":
+		//get class data & get teacher data
+		class := s.ClassRepository.GetByCode(filterData.ClassCode)
+		teach := s.TeacherRepository.GetBy2(class.Id, filterData.TeachEmail)
+		if class == nil || teach == nil {
+			return c.JSON(http.StatusBadRequest, "no data with this option")
+		}
+		//get student by class code
+		var stud []entity.Student
+		var numb int64
+		stud, numb = s.StudentRepository.GetByFilterTeacherAndClass(class.Id, *filterData, *teach)
+		if stud == nil {
+			return c.JSON(http.StatusBadRequest, ErrNotFound)
+		}
+		//re-construct final data
+		FinalData := dto.ReconstructFilterData(stud, *filterData, numb, "teacher:email - class:code")
+
+		return c.JSON(http.StatusOK, FinalData)
+
+	case filterData.ClassCode != "":
+		//get class data
+		class := s.ClassRepository.GetByCode(filterData.ClassCode)
+		if class == nil {
+			return c.JSON(http.StatusBadRequest, "no data with this class")
+		}
+		//get student by class code
+		var stud []entity.Student
+		var numb int64
+		stud, numb = s.StudentRepository.GetByCode(class.Id, filterData.SortBy.StudentName, filterData.SortBy.TeacherName)
+		if stud == nil {
+			return c.JSON(http.StatusBadRequest, ErrNotFound)
+		}
+		//re-construct final data
+		FinalData := dto.ReconstructFilterData(stud, *filterData, numb, "class:code")
+
+		return c.JSON(http.StatusOK, FinalData)
+
+	}
+	return c.JSON(http.StatusOK, "no data with this option")
 }

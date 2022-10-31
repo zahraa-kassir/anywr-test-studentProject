@@ -1,31 +1,30 @@
 package dto
 
-import "test-pr/anywr-test-studentProject/entity"
+import (
+	"test-pr/anywr-test-studentProject/entity"
+	"test-pr/anywr-test-studentProject/payload"
+)
 
 type FilterData struct {
-	Teacher SimpleData      `json:"teacher"`
-	Class   SimpleClassData `json:"class"`
-	Student []SimpleData    `json:"student"`
+	PageData PaginationData      `json:"page_data"`
+	Student  []SimpleStudentData `json:"student"`
 }
 
 // -----------------------------------------------------------------
 // re-construct with dto
 
-func ReconstructFilterData(teach entity.Teacher, class entity.Classes, stud []entity.Student) FilterData {
+func ReconstructFilterData(stud []entity.Student, filterData payload.FilterByTeacherAndClass, nb int64, text string) FilterData {
 
-	var students []SimpleData
+	var students []SimpleStudentData
 	for i, v := range stud {
-		n := ReconstructSimpleData(i, v.Name, v.Email)
+		n := ReconstructSimpleStudentData(i, v)
 		students = append(students, n)
 	}
-	fl := FilterData{
 
-		Teacher: ReconstructSimpleData(teach.Id, teach.Name, teach.Email),
-		Class:   ReconstructSimpleClass(class),
-		Student: students,
+	return FilterData{
+		PageData: ReconstructPaginationData(filterData, nb, text),
+		Student:  students,
 	}
-
-	return fl
 }
 
 // -----------------------------------------------------------------

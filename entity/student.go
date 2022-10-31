@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gorm.io/gorm"
 	"strconv"
+	"strings"
 )
 
 type Student struct {
@@ -13,6 +14,7 @@ type Student struct {
 	Password string
 	Class    int     `gorm:"index"`
 	Classes  Classes `gorm:"foreignKey:id;references:class"`
+	Notes    int
 }
 
 func (s Student) TableName() string {
@@ -33,6 +35,9 @@ func ByStudentEmail(email string) func(db *gorm.DB) *gorm.DB {
 // ByStudentClassId where student.class
 func ByStudentClassId(id int) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
+		if id == 0 {
+			return db
+		}
 		return db.Where("students.class = ? ", id)
 	}
 
@@ -53,6 +58,33 @@ func ByPageNum(page, size string) func(db *gorm.DB) *gorm.DB {
 		return db.Offset(offset).Limit(pageSize)
 	}
 
+}
+
+// ByRank by rank max or min
+func ByRank(db *gorm.DB, rank string) *gorm.DB {
+	//handle the rank text , verifie
+	rType := strings.ToLower(rank)
+
+	if rType == "min" {
+		return db.Select("students.class as class,Min(students.notes) as notes").Group("students.class").Table("students")
+	} else if rType == "max" {
+		return db.Select("students.class as class,Max(students.notes) as notes").Group("students.class").Table("students")
+	}
+
+	return db.Select("")
+}
+
+// BySort sorting acs des
+func BySort(sort string) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		rType := strings.ToLower(sort)
+
+		if rType == "desc" {
+			return db.Order("students.name DESC")
+		}
+
+		return db.Order("students.name ASC")
+	}
 }
 
 // -----------------------------------------------------------------

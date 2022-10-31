@@ -3,6 +3,7 @@ package entity
 import (
 	"fmt"
 	"gorm.io/gorm"
+	"strings"
 )
 
 type Teacher struct {
@@ -17,11 +18,30 @@ func (t Teacher) TableName() string {
 	return "teachers"
 }
 
+// -----------------------------------------------------------------
+// Scopes
+//
+
 func ByTeachEmail(email string) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		return db.Where("teachers.email = ? ", email)
 	}
 }
+
+// ByTeachSort sorting acs des
+func ByTeachSort(sort string) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		rType := strings.ToLower(sort)
+
+		if rType == "desc" {
+			return db.Order("teachers.name DESC")
+		}
+
+		return db.Order("teachers.name ASC")
+	}
+}
+
+// -----------------------------------------------------------------
 
 func (t Teacher) ToString() string {
 	return fmt.Sprintf("Teacher: %v , Email@: %v", t.Name, t.Email)

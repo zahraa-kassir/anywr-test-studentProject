@@ -3,6 +3,7 @@ package repository
 import (
 	"gorm.io/gorm"
 	"test-pr/anywr-test-studentProject/entity"
+	"test-pr/anywr-test-studentProject/payload"
 )
 
 type StudentRepository struct {
@@ -28,27 +29,47 @@ func (s StudentRepository) GetByEmail(email string) *entity.Student {
 	return &student
 }
 
-func (s StudentRepository) GetByCode(id int) []entity.Student {
+func (s StudentRepository) GetByCode(id int, sorStudent string, sortTeach string) ([]entity.Student, int64) {
 	var students []entity.Student
-	if dbc := s.DB.Scopes(entity.ByStudentClassId(id)).Preload("Classes").Find(&students); dbc.Error != nil {
-		return nil
+	dbc := s.DB.Scopes(entity.ByStudentClassId(id), entity.BySort(sorStudent)).Preload("Classes.Teacher", entity.ByTeachSort(sortTeach)).Find(&students)
+	rowNum := dbc.RowsAffected
+	if dbc.Error != nil {
+		return nil, 0
 	}
-	return students
+	return students, rowNum
 
 }
 
-func (s StudentRepository) GetByFilter(code int, page string, pageSize string, email string) []entity.Student {
+func (s StudentRepository) GetByFilterTeacherAndClass(code int, data payload.FilterByTeacherAndClass, teacher entity.Teacher) ([]entity.Student, int64) {
 	var students []entity.Student
-	if dbc := s.DB.
-		Scopes(entity.ByStudentClassId(code), entity.ByPageNum(page, pageSize)).
-		Preload("Classes", "id=?", code).
-		Joins("inner join classes on classes.id = students.class").
-		Joins("inner join teacher_classes on teacher_classes.class_id = classes.id").
-		Joins("inner join teachers on teachers.email = ?", email).
-		Find(&students); dbc.Error != nil {
-		return nil
+	query := s.DB.
+		Scopes(entity.ByStudentClassId(code),
+			entity.ByPageNum(data.Page, data.PageSize),
+			entity.BySort(data.SortBy.StudentName)).
+		Preload("Classes.Teacher", entity.ByTeachSort(data.SortBy.TeacherName), "teachers.id = ?", teacher.Id).
+		Find(&students)
+	rowNum := query.RowsAffected
+	if query.Error != nil {
+		return nil, 0
 	}
 
-	return students
+	return students, rowNum
 
+}
+
+func (s StudentRepository) GetByRank(classId int, data payload.FilterByTeacherAndClass) ([]entity.Student, int64) {
+	var students []entity.Student
+
+	query := s.DB.
+		Scopes(entity.ByStudentClassId(classId),
+			entity.ByPageNum(data.Page, data.PageSize),
+			entity.BySort(data.SortBy.StudentName)).
+		Preload("Classes.Teacher", entity.ByTeachSort(data.SortBy.TeacherName)).
+		Joins("inner join (?) q on q.class = students.class and q.notes = students.notes", entity.ByRank(s.DB, data.RankBy)).
+		Find(&students)
+	rowNum := query.RowsAffected
+	if query.Error != nil {
+		return nil, 0
+	}
+	return students, rowNum
 }

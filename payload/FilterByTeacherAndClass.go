@@ -5,4 +5,12 @@ type FilterByTeacherAndClass struct {
 	ClassCode  string `json:"class_code"`
 	Page       string `json:"page"`
 	PageSize   string `json:"page_size"`
+	SortBy     SortBy `json:"sort_by"`
+	RankBy     string `json:"rank_by"`
+}
+
+type SortBy struct {
+	StudentName string `json:"student_name"`
+	TeacherName string `json:"teacher_name"`
+	ClassCode   string `json:"class_code"`
 }
