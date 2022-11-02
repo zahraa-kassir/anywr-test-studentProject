@@ -18,6 +18,7 @@ type Student struct {
 }
 
 func (s Student) TableName() string {
+	//it is better to name db table in singular as each record represents a singular student
 	return "students"
 }
 
@@ -28,6 +29,7 @@ func (s Student) TableName() string {
 // ByStudentEmail where student.email
 func ByStudentEmail(email string) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
+		//it is better here to check if email is empty or not before doing any query
 		return db.Where("students.email = ?", email)
 	}
 }

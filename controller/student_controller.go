@@ -67,6 +67,7 @@ func (s StudentController) GetByCode(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, ErrNotFound)
 	}
 	//get data of student based on class.id
+	// you can directly here return student based on class code without passing by class repo first
 	stud, _ := s.StudentRepository.GetByCode(data.Id, "", "")
 	if stud == nil {
 		return c.JSON(http.StatusBadRequest, ErrNotFound)
@@ -93,11 +94,13 @@ func (s StudentController) GetByThAndClass(c echo.Context) error {
 	if err := c.Bind(filterData); err != nil {
 		return err
 	}
+	//try to make it one repository method which takes all filters
 	switch {
 	case filterData.RankBy != "":
 		//by rank (min , max) 2 case for this:
 		//{} one by class code
 		//{} student for every class
+		//you can check the existence of the filter on the repo level (applies for all filters)
 		if filterData.ClassCode == "" {
 			//get student by class code
 			var stud []entity.Student
@@ -169,5 +172,6 @@ func (s StudentController) GetByThAndClass(c echo.Context) error {
 		return c.JSON(http.StatusOK, FinalData)
 
 	}
+	//you can send nil if no response
 	return c.JSON(http.StatusOK, "no data with this option")
 }

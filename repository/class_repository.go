@@ -24,6 +24,7 @@ func (c ClassRepository) GetAll() []entity.Classes {
 
 func (c ClassRepository) GetById(id int) entity.Classes {
 	var class entity.Classes
+	//you can use it without adding the = as it is not used
 	_ = c.DB.Scopes(entity.ByClassesId(id)).Take(&class)
 	return class
 }

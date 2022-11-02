@@ -15,9 +15,10 @@ func main() {
 	e.Use(middleware.Recover())
 
 	// Connect to the "bank" database
+	//This one should be inside container/database.go
 	db.Connect("postgres://postgres:admin@localhost:5432/anywrstudentproject")
 
-	//Routes
+	//Routes (can be moved to a route file to keep main clean)
 	TeacherController := wires.InitialiseTeachCont(db.Instance)
 	StudentController := wires.InitialiseStudCont(db.Instance)
 	classController := wires.InitialiseClassCont(db.Instance)

@@ -1,5 +1,6 @@
 package payload
 
+// FilterByTeacherAndClass in the filters you are receiving as query params it is query tag not json
 type FilterByTeacherAndClass struct {
 	TeachEmail string `json:"teach_email"`
 	ClassCode  string `json:"class_code"`

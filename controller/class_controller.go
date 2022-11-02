@@ -27,9 +27,20 @@ func ClassCont(classRep repository.ClassRepository, studRep repository.StudentRe
 func (r ClassController) GetAll(c echo.Context) error {
 	//get data
 	classData := r.ClassRepository.GetAll()
+	//at this level you are mapping from entity to dto not re-constructing
 	//re-construct this with dto.class
+	//ToClassDTO()
+
+	//try to give accurate names for all variables
+	//var classDTOs []dto.Class
+	//for _, class := range classData {
+	//	classDTO := dto.ReconstructClass(&class)
+	//	classDTOs = append(classDTOs, classDTO)
+	//}
 	var all []dto.Class
 	for _, v := range classData {
+		//also for method names lets use something more relatable
+		//like something related to mapping
 		obj := dto.ReconstructClass(&v)
 		all = append(all, obj)
 	}
@@ -39,6 +50,7 @@ func (r ClassController) GetAll(c echo.Context) error {
 // GetById get class based on class.id
 func (r ClassController) GetById(c echo.Context) error {
 	//handle param and convert
+	//if this returns an error on failure we should always handle it not ignore it
 	id, _ := strconv.Atoi(c.Param("id"))
 	//get data
 	data := r.ClassRepository.GetById(id)
@@ -75,3 +87,37 @@ func (r ClassController) GetStByClCode(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, uniClassData)
 }
+
+/*Business model
+
+Student Entity
+Student personal details Entity
+
+Student Model ()
+
+-----------------------------
+
+usecase ->
+get -> query
+saving -> command
+
+
+controller -> usecase -> repo Interface -> repo Impl -> DB
+interface (api, service) -> usecase (query, command) -> domain (repository, model) -> adapter (db(repository, entity), university(repository, ))
+
+adapter -> entity (adapter returns model) -> mapping from entity to model
+usecase (takes models w returns models)
+interface(api) takes model w returns dto -> mapping from model to
+
+
+--------------------------------------
+Project Structure:
+->anywr
+ -> cmd (main)
+ -> internal (adapter, domain, interface, usecase, route)
+ -> config
+ -> container (database, wire..)
+ -> pkg
+  -> utils (validate email, split string)
+
+*/
